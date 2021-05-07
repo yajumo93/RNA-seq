@@ -1,41 +1,74 @@
-## make data.frame for each htseq-count files for normal
-count_files_n = list.files(path = "./normal/", pattern = "*.TableOfCounts.txt")
-first.sample.n = read.delim(paste0('./normal/',count_files_n[1]), header = F, row.names = 1)
-count.table.n = data.frame(first.sample.n)
-samples.n = gsub(".Table.*","", count_files_n)
 
-for(i in count_files_n[2:length(count_files_n)]){
-  fname_n = paste0('./normal/', i)
-  column.n = read.delim(fname_n, header = F, row.names = 1)
-  count.table.n = cbind(count.table.n, s = column.n)
+## make data.frame for each htseq-count files
+
+data_path = "D:\\junmo\\wd\\RNAseq\\data\\count_data\\RNAseq1_210419_32sample\\"
+save_path = "D:\\junmo\\wd\\RNAseq\\data\\df_data\\RNAseq1_210419_32sample\\"
+
+count_file_lst = list.files(path = data_path, 
+                            pattern = "*.count")
+count_file_lst[1]
+first.sample.n = read.delim(paste0(data_path, count_file_lst[1]),
+                            header = F, row.names = 1)
+
+head(first.sample.n)
+class(first.sample.n) # df
+
+count.table = data.frame(first.sample.n)
+head(count.table)
+str(count.table)
+class(count.table)
+
+
+# gsub(찾을 것, 바꿀 것, 열 지정)
+name_list = gsub(".count","", count_file_lst)
+name_list
+
+count_file_lst
+
+for (i in count_file_lst[2:length(count_file_lst)]) {
+  path_list = paste0(data_path, i)
+  column.n = read.delim(path_list, header = F, row.names = 1)
+  count.table = cbind(count.table, s = column.n)
 }
-colnames(count.table.n) = samples.n
+
+colnames(count.table) = name_list
+
+head(count.table)
 
 
-## make data.frame for each htseq-count files for tumor
-count_files = list.files(path = ".", pattern = "*.TableOfCounts.txt")
-samples = gsub(".Table.*","", count_files)
 
-first.sample = read.delim(paste0(count_files[1]),header=F,row.names=1) ##경로 + 파일명 합쳐서 불러오고싶을 때
-count.table = data.frame(first.sample)
+# ## combine normal & tumor
+# count.table.nt = cbind(count.table.n, count.table)
+# #colnames(count.table.nt) = c(rep("n", 5), rep("t", 44))
+# head(count.table.nt)
 
-for(s in count_files[2:length(count_files)]){
-  #print(s)
-  print(which(count_files %in% s))
-  fname = s
-  column = read.delim(fname, header=F, row.names=1)
-  count.table = cbind(count.table, s=column)
-}
-colnames(count.table) = samples
-
-
-## combine normal & tumor
-count.table.nt = cbind(count.table.n, count.table)
-#colnames(count.table.nt) = c(rep("n", 5), rep("t", 44))
-head(count.table.nt)
 
 
 ##save file
-write.csv(count.table.nt, "count.table.nt.csv")
-write.table(count.table.nt, file="count.table.nt.txt", sep = "\t")
-write.table(count.table.nt, file="count.table.nt.gsea.txt", sep = "\t")
+
+write.csv(count.table, paste0(save_path, "count_table.csv"))
+
+write.table(count.table, file=paste0(save_path, "count_table.txt"), sep = "\t")
+write.table(count.table, file=paste0(save_path, "count_table.gsea.txt"), sep = "\t")
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
