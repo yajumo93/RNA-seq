@@ -1,4 +1,11 @@
+
+# if (!requireNamespace("BiocManager", quietly = TRUE))
+#     install.packages("BiocManager")
+
+# BiocManager::install("edgeR")
+
 library(edgeR)  #load edger package
+
 x <- read.table("count.table.nt.txt", header = TRUE, sep ="\t", row.names=1)
 bcv <- 0.4  #human=0.4
 group = c(rep("n", 5), rep("t", 44))

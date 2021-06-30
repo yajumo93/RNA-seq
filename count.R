@@ -1,13 +1,26 @@
 
 ## make data.frame for each htseq-count files
 
-data_path = "D:\\junmo\\wd\\RNAseq\\data\\count_data\\RNAseq1_210419_32sample\\"
-save_path = "D:\\junmo\\wd\\RNAseq\\data\\df_data\\RNAseq1_210419_32sample\\"
+data_dir = "/data_244/RNA/mapped/count/"
+save_dir_name = "table_data/"
 
-count_file_lst = list.files(path = data_path, 
+save_dir = paste0(data_dir, save_dir_name)
+save_dir
+setwd(data_dir)
+getwd()
+
+if(!file.exists(save_dir)){
+    dir.create(save_dir_name)
+}
+
+file.exists(save_dir)
+
+
+count_file_lst = list.files(path = data_dir, 
                             pattern = "*.count")
 count_file_lst[1]
-first.sample.n = read.delim(paste0(data_path, count_file_lst[1]),
+count_file_lst
+first.sample.n = read.delim(paste0(data_dir, count_file_lst[1]),
                             header = F, row.names = 1)
 
 head(first.sample.n)
@@ -26,7 +39,7 @@ name_list
 count_file_lst
 
 for (i in count_file_lst[2:length(count_file_lst)]) {
-  path_list = paste0(data_path, i)
+  path_list = paste0(data_dir, i)
   column.n = read.delim(path_list, header = F, row.names = 1)
   count.table = cbind(count.table, s = column.n)
 }
@@ -46,10 +59,10 @@ head(count.table)
 
 ##save file
 
-write.csv(count.table, paste0(save_path, "count_table.csv"))
+write.csv(count.table, paste0(save_dir, "count_table.csv"))
 
-write.table(count.table, file=paste0(save_path, "count_table.txt"), sep = "\t")
-write.table(count.table, file=paste0(save_path, "count_table.gsea.txt"), sep = "\t")
+write.table(count.table, file=paste0(save_dir, "count_table.txt"), sep = "\t")
+write.table(count.table, file=paste0(save_dir, "count_table.gsea.txt"), sep = "\t")
 
 
 

@@ -14,3 +14,16 @@ edgeR, differential expression analysis
 
 ### tpm
 Arrange differential expression analysis results. (logFC, TPM)
+
+
+
+
+
+
+# count.R 
+expression count값에 대해 sample들 병합
+
+# DGEList.R
+cpm을 바탕으로 필터 걸어준 후, cpm값 저장
+
+# 
