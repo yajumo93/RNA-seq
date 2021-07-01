@@ -93,7 +93,9 @@ dim(counts.keep) # cpm 역치 넘은 '유전자'만 남음.  (55887 -> 21997)
 max((counts.keep)[,1]) # 첫번째 sample에서 가장 많이 발현한 값 = 14496456
 max((cpm(counts.keep))[,1]) # 첫번째 sample에서 가장 많이 발현한 cpm 값 = 166241.9
 
+pdf("/data_244/RNA/mapped/count/pdf/plot.pdf", width = 12, height = 12)
 plot(cpm(counts.keep)[, 1], counts.keep[,1]) # 당연히 비례 그래프 출력 
+dev.off()
 
 # install.packages('txtplot')
 # library('txtplot')
