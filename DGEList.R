@@ -8,8 +8,14 @@ if (!requireNamespace("BiocManager", quietly = TRUE)){
 
 library(edgeR)
 
-data_dir = "/data_244/RNA/mapped/count/table_data/"
-table_name = "count_table.gsea.txt"
+data_dir = "E:/stemcell/RNAseq/gdc/count/table_data/"
+table_name = "Tera_IPS_count.txt"
+
+output_f_name = 'IPS_Tera_DEG'
+
+logFC_filter <- 1.5 # abs(logFC)
+p_value <- 0.05
+
 
 setwd(data_dir)
 getwd()
@@ -17,9 +23,15 @@ getwd()
 # ?read.delim
 
 counts <- read.delim(paste0(data_dir, table_name), row.names = 1)
+
+raw_count <- rowSums(counts) > 0 # 최소 한쪽에서 발현이 0보다 많이 된것
+raw_count
+raw.over.0 <- counts[raw_count,]
+dim(raw.over.0)
+
 head(counts)
 samples = colnames(counts)
-sum(counts$hESO14) # 87278916
+sum(counts$hiPS21.B) # 87278916
 sum(counts$Teratoma.13)
 
 
@@ -56,9 +68,10 @@ table(grp == 1) # origin: 1 = 21개 // Teratoma: 2 = 14개 (210629)
 # CPM : count per million
 cpm_count <- cpm(counts) # 전체 fragment(전체 gene에서 발현된 모든 fragments) 백만개당 target fragment의 개수 정규화 
                          # counts에서 --> (하나의 gene / 전체 gene 합) 값임. 퍼센트는 아님
+                         # 전체 발현량 : 100만 = 특정 gene 발현량 : 정규화 값(x)
 head(cpm_count)
 
-thresh <- cpm_count > 0.5 # hESO14 샘플의 경우 43개 이상이면 pass (y = (총 합 * 0.5) / 백만)
+thresh <- cpm_count > 0.3 # hESO14 샘플의 경우 43개 이상이면 pass (y = (총 합 * 0.5 / 백만))
 # 트리밍할 '유전자' 정해주는 과정
 head(thresh)
 
@@ -80,6 +93,8 @@ table(rowSums(thresh)) # 위의 발현한 '수' 기준으로 빈도 출력. {해
 keep <- rowSums(thresh) >= 2
 # keep <- rowSums(thresh) >= 1 # 유전자들에 대하여 최소 한개 샘플에서 CPM 역치 넘는 유전자만 추출
 
+dim(counts.keep) # 숫자 일치 확인
+
 summary(keep) # 두개 이상일 때 = {F:33890 / T:21997} // 한개 이상일 때 {F:31815 / T:24072}
 
 head(keep)
@@ -93,13 +108,13 @@ dim(counts.keep) # cpm 역치 넘은 '유전자'만 남음.  (55887 -> 21997)
 max((counts.keep)[,1]) # 첫번째 sample에서 가장 많이 발현한 값 = 14496456
 max((cpm(counts.keep))[,1]) # 첫번째 sample에서 가장 많이 발현한 cpm 값 = 166241.9
 
-pdf("/data_244/RNA/mapped/count/pdf/plot.pdf", width = 12, height = 12)
-plot(cpm(counts.keep)[, 1], counts.keep[,1]) # 당연히 비례 그래프 출력 
-dev.off()
+# pdf("E:/stemcell/RNAseq/gdc/count/table_data/plot.pdf", width = 12, height = 12)
+# plot(cpm(counts.keep)[, 1], counts.keep[,1]) # 당연히 비례 그래프 출력 
+# dev.off()
 
 # install.packages('txtplot')
 # library('txtplot')
-txtplot(cpm(counts.keep)[, 1], counts.keep[,1])
+# txtplot(cpm(counts.keep)[, 1], counts.keep[,1])
 
 
 #convert counts to DGEList object
@@ -108,6 +123,7 @@ txtplot(cpm(counts.keep)[, 1], counts.keep[,1])
 # ?model.matrix
 # ?estimateDisp
 # ?exactTest
+
 
 # group 정보를 매칭되는 샘플별로 넣어주면 되나?
 # keep 자체가 cpm을 활용해 걸러낸 count table임.
@@ -123,8 +139,16 @@ class(d0$samples) # df
 
 y = calcNormFactors(d0) # normalization
 head(y)
+y$samples
+sample_label <- c(h21.B)
+
+plotMD(y)
+plotMDS(y)
+
 
 y$samples
+write.table(y$samples, file='gsea.input.filtered.txt', sep='\t',quote = FALSE)
+write.csv(y$samples, file = 'sample_table.csv', quote = F)
 
 cpm_count <- cpm(y, log=T)
 head(cpm_count)
@@ -163,8 +187,12 @@ y1 # count, sample에다가 추가로 분산 관련해서 더 붙음. 21992 (row
 et = exactTest(y1)
 
 et
+plotMD(et)
 
-topTags(et)
+top50 <- topTags(et, n = 50)
+top50
+
+plotMD(top50)
 
 
 # et2 = exactTest(y1, pair = c(1, 2))
@@ -178,7 +206,75 @@ topTags(et)
 y1$samples$group
 
 
+row_len <- dim(et$table)[1]
+row_len
 
+top_res <- topTags(et, n = row_len) # fdr 값 새겨진 table get
+top_res_table <- top_res$table
+dim(top_res_table)
+head(top_res_table)
+et$comparison # 1: ips, 2: Tera
+
+library(tibble)
+
+top_res_table <- rownames_to_column(top_res_table, 'Gene')
+# top50_res_table <- rownames_to_column(top50_table, 'Gene')
+
+head(top_res_table)
+
+# head(top50_res_table)
+# dim(top50_res_table)
+
+
+
+top_res_filtered <- subset(top_res_table, 
+                           abs(logFC)>logFC_filter & PValue<=p_value &
+                             FDR<=0.05)
+
+dim(top_res_filtered)
+
+getwd()
+
+up_regulated <- subset(top_res_filtered, logFC > 0)
+down_regulated <- subset(top_res_filtered, logFC < 0)
+
+up_genes <- up_regulated$Gene
+down_genes <- down_regulated$Gene
+
+up_genes
+
+
+
+# write.table(top50_res_table, file=paste0(output_f_name, '_top50.tsv'), sep='\t',quote = FALSE,
+#             row.names = F)
+# write.csv(top50_res_table, file=paste0(output_f_name, '_top50.csv'), quote = F, row.names = F)
+
+
+
+
+write.table(top_res_filtered, file=paste0(output_f_name, '_filtered.tsv'), sep='\t',quote = FALSE,
+            row.names = F)
+write.csv(top_res_filtered, file=paste0(output_f_name, '_filtered.csv'), quote = F, row.names = F)
+
+
+
+
+write.table(up_regulated, file=paste0(output_f_name, '_B_upreg.tsv'), sep='\t',quote = FALSE,
+            row.names = F)
+write.csv(up_regulated, file=paste0(output_f_name, '_B_upreg.csv'), quote = F, row.names = F)
+
+write.table(up_genes, file=paste0(output_f_name, '_B_upreg_genes.txt'), sep='\n',quote = FALSE,
+            row.names = F, col.names = F)
+
+
+
+
+write.table(down_regulated, file=paste0(output_f_name, '_B_downreg.tsv'), sep='\t',quote = FALSE,
+            row.names = F)
+write.csv(down_regulated, file=paste0(output_f_name, '_B_downreg.csv'), quote = F, row.names = F)
+
+write.table(down_genes, file=paste0(output_f_name, '_B_downreg_genes.txt'), sep='\n',quote = FALSE,
+            row.names = F, col.names = F)
 
 
 

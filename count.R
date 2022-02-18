@@ -1,12 +1,23 @@
 
 ## make data.frame for each htseq-count files
 
-data_dir = "/data_244/RNA/mapped/count/"
-save_dir_name = "table_data/"
+data_dir = "E:/stemcell/RNAseq/gdc/count/mt_mut/clone_comp/Tera"
+save_dir_name = "table_data"
 
-save_dir = paste0(data_dir, save_dir_name)
+# save_csv_name = 'hIPS29-EB_count.csv'
+# save_tsv_name = 'hIPS29-EB_count.tsv'
+# save_gsea_name = 'hIPS29-EB_count.txt'
+# save_csv_name = 'Tera_IPS_count.csv'
+# save_tsv_name = 'Tera_IPS_count.tsv'
+# save_gsea_name = 'Tera_IPS_count.txt'
+save_csv_name = 'Tera_count.csv'
+save_tsv_name = 'Tera_count.tsv'
+save_gsea_name = 'Tera_count.txt'
+
+# save_dir = paste0(data_dir, save_dir_name)
+save_dir = file.path(data_dir, save_dir_name)
 save_dir
-setwd(data_dir)
+old.path <- setwd(data_dir)
 getwd()
 
 if(!file.exists(save_dir)){
@@ -15,12 +26,11 @@ if(!file.exists(save_dir)){
 
 file.exists(save_dir)
 
-
 count_file_lst = list.files(path = data_dir, 
                             pattern = "*.count")
 count_file_lst[1]
 count_file_lst
-first.sample.n = read.delim(paste0(data_dir, count_file_lst[1]),
+first.sample.n = read.delim(file.path(data_dir, count_file_lst[1]),
                             header = F, row.names = 1)
 
 head(first.sample.n)
@@ -39,7 +49,7 @@ name_list
 count_file_lst
 
 for (i in count_file_lst[2:length(count_file_lst)]) {
-  path_list = paste0(data_dir, i)
+  path_list = list.files(data_dir, i)
   column.n = read.delim(path_list, header = F, row.names = 1)
   count.table = cbind(count.table, s = column.n)
 }
@@ -59,15 +69,12 @@ head(count.table)
 
 ##save file
 
-write.csv(count.table, paste0(save_dir, "count_table.csv"))
-
-write.table(count.table, file=paste0(save_dir, "count_table.txt"), sep = "\t")
-write.table(count.table, file=paste0(save_dir, "count_table.gsea.txt"), sep = "\t")
-
+write.csv(count.table, file=file.path(save_dir, save_csv_name))
+write.table(count.table, file=file.path(save_dir, save_tsv_name), sep = "\t")
+write.table(count.table, file=file.path(save_dir, save_gsea_name), sep = "\t")
 
 
-
-
+setwd(old.path)
 
 
 
