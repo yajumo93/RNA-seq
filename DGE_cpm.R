@@ -2,9 +2,21 @@
 
 library(edgeR)
 
-data_dir = "E:/stemcell/RNAseq/gdc/count/mt_mut/clone_comp/Tera/table_data"
-table_name = "Tera_count.tsv"
+# data_dir = "E:/stemcell/RNAseq/gdc/count/mt_mut/clone_comp/Tera/table_data"
+data_dir = 'C:/AMC_proj/stemcell/RNAseq/RNAseq/gdc/count/mt_mut/clone_comp/Tera/table_data'
+# table_name = "Tera_count.tsv"
+# table_name = 'Beta_count.tsv'
+# table_name = 'cardio_count.tsv'
+# table_name = 'dopa_count.tsv'
+# table_name = 'EB_count.tsv'
+# table_name = 'IPS_count.tsv'
+table_name = 'Tera_count.tsv'
 
+
+# output_f_name = 'Tera_DEG_result'
+# output_f_name = 'Beta_DEG_result'
+# output_f_name = 'EB_DEG_result'
+# output_f_name = 'IPS_DEG_result'
 output_f_name = 'Tera_DEG_result'
 
 group_vec <- c(1, 2)
@@ -35,7 +47,7 @@ samples <-  colnames(counts)
 # counts[counts$hiPS29.A.EB==0,]
 # sum(counts$X29.A.Beta.cell) # 118843204
 # sum(counts$X29.B.Beta.cell) # 98828820
-?cpm
+# ?cpm
 cpm_count <- cpm(counts)
 # cpm_count
 
@@ -76,10 +88,11 @@ d0 <- DGEList(counts.keep, group = group_vec) # colSums(counts.keep)이 lib.size
 
 # head(d0$counts[, 'hiPS29.A.EB'])
 d0$samples
+d0$samples$group 
 
 
 # norm.factors 계산 및 추가
-?calcNormFactors
+# ?calcNormFactors
 y = calcNormFactors(d0) 
 head(y)
 # y$samples
@@ -98,8 +111,9 @@ cpm_count <- cpm(y, log=T) # log CPM 값
 
 # y1 = estimateDisp(y) #  rep sample이 없을때 : (경고) There is no replication
 
-# y
-
+class(y$samples$group)
+y$samples$group
+as.factor(c(2,1))
 
 
 
@@ -107,8 +121,11 @@ cpm_count <- cpm(y, log=T) # log CPM 값
 # ?exactTest
 
 # no rep일때
-# ?exactTest
-et_no_rep <- exactTest(y, dispersion = no_replicate_bcv^2)
+# ?exactTest # 디폴트: 1이 baseline. 1에 비해 2 up/down
+
+et_no_rep <- exactTest(y, 
+                       pair=c(2,1),
+                       dispersion = no_replicate_bcv^2)
 # et_no_rep
 # class(et_no_rep)
 
@@ -201,6 +218,9 @@ write.csv(down_regulated, file=paste0(output_f_name, '_B_downreg.csv'), quote = 
 write.table(down_genes, file=paste0(output_f_name, '_B_downreg_genes.txt'), sep='\n',quote = FALSE,
             row.names = F, col.names = F)
 
+
+setwd(old.path)
+getwd()
 
 
 # 

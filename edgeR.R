@@ -1,8 +1,8 @@
 
-# if (!requireNamespace("BiocManager", quietly = TRUE))
-#     install.packages("BiocManager")
+if (!requireNamespace("BiocManager", quietly = TRUE))
+    install.packages("BiocManager")
 
-# BiocManager::install("edgeR")
+BiocManager::install("edgeR")
 
 library(edgeR)  #load edger package
 
