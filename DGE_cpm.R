@@ -3,7 +3,7 @@
 library(edgeR)
 
 # data_dir = "E:/stemcell/RNAseq/gdc/count/mt_mut/clone_comp/Tera/table_data"
-data_dir = 'C:/AMC_proj/stemcell/RNAseq/RNAseq/gdc/count/mt_mut/clone_comp/Tera/table_data'
+data_dir = 'E:/stemcell/RNAseq/gdc/count/diff/clone_comp/Tera/table_data'
 # table_name = "Tera_count.tsv"
 # table_name = 'Beta_count.tsv'
 # table_name = 'cardio_count.tsv'
@@ -13,11 +13,12 @@ data_dir = 'C:/AMC_proj/stemcell/RNAseq/RNAseq/gdc/count/mt_mut/clone_comp/Tera/
 table_name = 'Tera_count.tsv'
 
 
-# output_f_name = 'Tera_DEG_result'
+output_f_name = 'Tera_DEG_result'
 # output_f_name = 'Beta_DEG_result'
+# output_f_name = 'Cardio_DEG_result'
 # output_f_name = 'EB_DEG_result'
 # output_f_name = 'IPS_DEG_result'
-output_f_name = 'Tera_DEG_result'
+# output_f_name = 'Dopa_DEG_result'
 
 group_vec <- c(1, 2)
 
