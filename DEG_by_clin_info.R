@@ -12,17 +12,28 @@ getwd()
 # root_dir = 'E:/stemcell/RNAseq/gdc/count/mt_mut'
 # root_dir = 'E:/stemcell/RNAseq/gdc/count/Diff_whole'
 root_dir = 'E:/stemcell/RNAseq/gdc/count/D_Age'
+# root_dir = 'E:/stemcell/RNAseq/gdc/count/Origin_comp/AM_Blo'
+# root_dir = 'E:/stemcell/RNAseq/gdc/count/Origin_comp/Blo_Fib'
 
 # save_path = 'table_data/mt_mut_table.tsv'
 
 # output_f_name = 'mtMut_DEG'
 # output_f_name = 'Diff_whole_DEG'
 output_f_name = 'AGE_DEG'
+# output_f_name = 'AM_Blo_DEG'
+# output_f_name = 'AM_Fib_DEG'
+# output_f_name = 'Blo_Fib_DEG'
 
 # target_sample_grp_name = 'MtMut'
 # base_sample_grp_name = 'WildType'
-target_sample_grp_name = 'Fetal'
-base_sample_grp_name = 'Old'
+target_sample_grp_name = 'Old'
+base_sample_grp_name = 'Fetal'
+# target_sample_grp_name = 'Blo'
+# base_sample_grp_name = 'AM'
+# target_sample_grp_name = 'Fib'
+# base_sample_grp_name = 'AM'
+# target_sample_grp_name = 'Fib'
+# base_sample_grp_name = 'Blo'
 # save_path = 'table_data/origin_mut_table.tsv'
 
 # root_dir = 'C:/AMC_proj/stemcell/RNAseq/RNAseq/gdc/count/mt_mut'
@@ -146,6 +157,7 @@ def_DEG_analysis_glm <- function(count_table_, grp_vec_, sam_name_vec_,
                group = grp_vec_)
   
   
+  
   keep <- filterByExpr(y, group = grp_vec_)
   ?filterByExpr
   print(table(keep))
@@ -214,44 +226,44 @@ sum(deg.result.list$result_table$PValue<0.05) # 1128
 sum(deg.result.list$result_table$FDR<0.01) # 43
 sum(deg.result.list$result_table$FDR<0.05) # 50
 
-
-# TMM값 붙여주기  / 나중에 꼭 필요하면 코드 수정 (cpm 커트해서 매치가 안됨됨)
-?cpm
-?rpkm
-
-TMM <- cpm(deg.result.list$y, normalized.lib.sizes = T, log = T)
-head(TMM)
-TMM_colName <- paste("TMMValue_", colnames(TMM), sep = '')
-TMM_colName
-colnames(TMM) <- TMM_colName
-TMM
-
-TMM.mean <- apply(TMM, MARGIN = 1, FUN = mean)
-class(TMM)
-TMM <- as.data.frame(TMM)
-TMM$TMM.mean <- TMM.mean
-
-# raw count 값 붙여주기
-raw_cnt_data <- deg.result.list$raw_count_table
-raw_cnt_data
-
-RawCount_colName <- paste("RawCount_", 
-                          colnames(deg.result.list$raw_count_table), sep = '')
-colnames(raw_cnt_data) <- RawCount_colName
-raw_cnt_data
-
-deg.result.list$result_table
-
-save_DEG_result <- cbind(deg.result.list$result_table,
-                         TMM,
-                         raw_cnt_data)
-
-library(writexl)
-
-write_xlsx(save_DEG_result, path = paste0(output_f_name, '_result.xlsx'))
-
-
-getwd()
+# 
+# # TMM값 붙여주기  / 나중에 꼭 필요하면 코드 수정 (cpm 커트해서 매치가 안됨됨)
+# ?cpm
+# ?rpkm
+# 
+# TMM <- cpm(deg.result.list$y, normalized.lib.sizes = T, log = T)
+# head(TMM)
+# TMM_colName <- paste("TMMValue_", colnames(TMM), sep = '')
+# TMM_colName
+# colnames(TMM) <- TMM_colName
+# TMM
+# 
+# TMM.mean <- apply(TMM, MARGIN = 1, FUN = mean)
+# class(TMM)
+# TMM <- as.data.frame(TMM)
+# TMM$TMM.mean <- TMM.mean
+# 
+# # raw count 값 붙여주기
+# raw_cnt_data <- deg.result.list$raw_count_table
+# raw_cnt_data
+# 
+# RawCount_colName <- paste("RawCount_", 
+#                           colnames(deg.result.list$raw_count_table), sep = '')
+# colnames(raw_cnt_data) <- RawCount_colName
+# raw_cnt_data
+# 
+# deg.result.list$result_table
+# 
+# save_DEG_result <- cbind(deg.result.list$result_table,
+#                          TMM,
+#                          raw_cnt_data)
+# 
+# library(writexl)
+# 
+# write_xlsx(save_DEG_result, path = paste0(output_f_name, '_result.xlsx'))
+# 
+# 
+# getwd()
 
 
 
@@ -326,38 +338,41 @@ write_xlsx(down_regulated, path = paste0(output_f_name, '_downreg.xlsx'))
 
 
 
-# for heatmap
-
-class(deg.result.list$raw_count_table)
-deg.result.list$y$counts
-DEG.raw.table <- deg.result.list$raw_count_table
-DEG.raw.table
-DEG.raw.table$genes <- rownames(DEG.raw.table)
-
-DEG.raw.table <- DEG.raw.table %>% relocate(genes)
-DEG.raw.table
 
 
-
-filtered.genes <- res.filtered %>% select(genes)
-class(filtered.genes)
-filtered.genes
-
-filtered_data_for_heatmap <- inner_join(filtered.genes, DEG.raw.table, by='genes')
-filtered_data_for_heatmap
-
-library(tidyverse)
-
-to_mat <- filtered_data_for_heatmap %>% 
-  remove_rownames %>% 
-  column_to_rownames(var="genes") %>% 
-  as.matrix()
-
-to_mat
-class(to_mat)
-# to_mat[to_mat['29-B-Beta-cell']>0,]
-# sum(to_mat[,'29-B-Beta-cell']>=0)
-dim(to_mat)
+# 
+# # for heatmap
+# 
+# class(deg.result.list$raw_count_table)
+# deg.result.list$y$counts
+# DEG.raw.table <- deg.result.list$raw_count_table
+# DEG.raw.table
+# DEG.raw.table$genes <- rownames(DEG.raw.table)
+# 
+# DEG.raw.table <- DEG.raw.table %>% relocate(genes)
+# DEG.raw.table
+# 
+# 
+# 
+# filtered.genes <- res.filtered %>% select(genes)
+# class(filtered.genes)
+# filtered.genes
+# 
+# filtered_data_for_heatmap <- inner_join(filtered.genes, DEG.raw.table, by='genes')
+# filtered_data_for_heatmap
+# 
+# library(tidyverse)
+# 
+# to_mat <- filtered_data_for_heatmap %>% 
+#   remove_rownames %>% 
+#   column_to_rownames(var="genes") %>% 
+#   as.matrix()
+# 
+# to_mat
+# class(to_mat)
+# # to_mat[to_mat['29-B-Beta-cell']>0,]
+# # sum(to_mat[,'29-B-Beta-cell']>=0)
+# dim(to_mat)
 
 
 
@@ -390,20 +405,24 @@ dim(to_mat)
 # ?cpm
 # TMM.heat <- cpm(deg.result.list.filterd$y, normalized.lib.sizes = T, log = T)
 
-TMM.heat <- cpm(to_mat, normalized.lib.sizes = T, log = T)
-TMM.heat
+
+
+
 # 
-# deg.result.list.filterd$y
+# TMM.heat <- cpm(to_mat, normalized.lib.sizes = T, log = T)
 # TMM.heat
-
-
-library(pheatmap)
-
-pheatmap(TMM.heat, cluster_rows = T , fontsize_row = 3.5,
-         cluster_cols = F, scale = 'row')
-
-pheatmap(TMM.heat, cluster_rows = T , fontsize_row = 3.5,
-         cluster_cols = F)
+# # 
+# # deg.result.list.filterd$y
+# # TMM.heat
+# 
+# 
+# library(pheatmap)
+# 
+# pheatmap(TMM.heat, cluster_rows = T , fontsize_row = 3.5,
+#          cluster_cols = F, scale = 'row')
+# 
+# pheatmap(TMM.heat, cluster_rows = T , fontsize_row = 3.5,
+#          cluster_cols = F)
 
 
 
